@@ -12,7 +12,7 @@ function Chapter({ id, children }: { id: SectionId; children: ReactNode }) {
   return (
     <section id={id} aria-label={s.label} className="relative" style={{ height: `${height}vh` }}>
       <div className="sticky top-0 flex min-h-screen items-center px-6 md:px-16">
-        <div className="max-w-xl">{children}</div>
+        <div className="pointer-events-auto max-w-xl">{children}</div>
       </div>
     </section>
   )
@@ -22,10 +22,10 @@ const kicker = 'font-mono text-xs uppercase tracking-[0.3em] text-cyan'
 
 export function Sections() {
   return (
-    <main className="relative z-10">
+    <main className="pointer-events-none relative z-10">
       <Chapter id="hero">
         <p className={kicker}>{content.title}</p>
-        <h1 className="font-display text-6xl font-bold tracking-tight md:text-8xl">{content.name}</h1>
+        <h1 className="sr-only">{content.name}</h1>
         <p className="mt-4 text-lg text-white/70">{content.tagline}</p>
       </Chapter>
 

@@ -37,9 +37,12 @@ Fonts: Chakra Petch (display), JetBrains Mono (HUD/data).
 - **Content:** everything personal is in `src/content.ts`.
 - **No heavy assets:** windows, holograms, billboards are shaders or runtime canvas textures; ambient audio is generated with Web Audio. Any external asset must be CC0/free-licensed and listed in this file.
 - Tailwind v4 via `@tailwindcss/vite`; colors defined as `@theme` tokens.
-- Note: macOS is case-insensitive. Don't create files whose names differ only in case (e.g. `sections.ts` vs `Sections.tsx`).
+- Note: macOS is case-insensitive. Don't create files whose names differ only in case (e.g. `sections.ts` vs `Sections.tsx`, `landmarks.ts` vs `Landmarks.tsx`). Already hit twice.
+- Hologram panels (`src/world/holo/`): canvas-drawn artwork + `createHoloMaterial` (scanlines, flicker, glitch bands, `uReveal`, `uHover`). Use `backing` when something could show through an additive panel.
+- The HTML overlay `<main>` is `pointer-events-none` so clicks reach the 3D scene; text blocks re-enable pointer events.
 
 ## World layout (meters, plaza at origin)
+All landmark poses live in `src/world/landmarks.ts`; the camera keyframes in `flightPath.ts` are derived from them, and the city generator clears a corridor around the path automatically.
 About tower (170,−150) · project avenue along +X from x=240 to 660 · Skills tower (780,0) · Contact mast (820,220) · Orbit epilogue climbs to ~2400 m.
 
 ## Chapters (scroll progress)
@@ -53,7 +56,7 @@ The orbit epilogue (user-approved): rise above the clouds to a planet horizon; n
 - [x] M1 setup, empty scene, scroll camera on placeholder path
 - [x] M2 procedural city, shader windows, edge glow, fog, bloom
 - [x] M3 plaza hologram, traffic trails, rooftop lights, flying vehicles (no rain, per user)
-- [ ] M4 full flight path, landmarks, banking/sway/parallax
+- [x] M4 full flight path, landmarks, banking/sway/parallax
 - [ ] M5 HUD, loader, nav, content wiring, project panels
 - [ ] M6 jellyfish, glitch transitions, sound, orbit epilogue, polish
 - [ ] M7 quality tiers, mobile, reduced motion, SEO/OG, Vercel deploy

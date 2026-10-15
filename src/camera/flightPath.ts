@@ -1,50 +1,75 @@
 import { CatmullRomCurve3, Vector3 } from 'three'
-
-// World layout (meters). The plaza sits at the origin; the project avenue runs along +X.
-export const LANDMARKS = {
-  plaza: new Vector3(0, 0, 0),
-  aboutTower: new Vector3(170, 0, -150),
-  avenueStart: new Vector3(240, 0, 0),
-  avenueEnd: new Vector3(660, 0, 0),
-  skillsTower: new Vector3(780, 0, 0),
-  contactMast: new Vector3(820, 0, 220),
-} as const
+import { SECTIONS, type SectionId } from '../sections/chapters'
+import { ABOUT_PANEL, CONTACT_ROOF, PROJECT_PANELS, SKILLS_TOWER, projectCameraPose } from '../world/landmarks'
 
 interface Keyframe {
   /** Scroll progress at which the camera reaches this point. */
   p: number
-  pos: [number, number, number]
-  look: [number, number, number]
+  pos: Vector3
+  look: Vector3
 }
 
-// Placeholder path (M1). Refined shot-by-shot in M4.
-const KEYFRAMES: Keyframe[] = [
-  // HERO — straight down on the plaza
-  { p: 0.0, pos: [0, 620, 2], look: [0, 0, 0] },
-  { p: 0.08, pos: [0, 560, 30], look: [0, 0, 0] },
-  // DIVE — pitch forward and drop toward a spoke road
-  { p: 0.14, pos: [40, 320, 160], look: [80, 60, -20] },
-  { p: 0.2, pos: [110, 110, 60], look: [170, 80, -150] },
-  // ABOUT — glide past the bio tower
-  { p: 0.27, pos: [120, 85, -60], look: [170, 90, -150] },
-  { p: 0.34, pos: [220, 55, -40], look: [320, 45, 0] },
-  // PROJECTS — down the avenue
-  { p: 0.42, pos: [300, 40, 0], look: [420, 40, 0] },
-  { p: 0.5, pos: [440, 40, 0], look: [560, 40, 0] },
-  { p: 0.6, pos: [640, 45, 0], look: [780, 80, 0] },
-  // SKILLS — climb around the skills tower
-  { p: 0.66, pos: [720, 90, -80], look: [780, 110, 0] },
-  { p: 0.74, pos: [860, 170, -40], look: [780, 170, 0] },
-  // CONTACT — rise to the antenna rooftop
-  { p: 0.81, pos: [900, 230, 150], look: [820, 250, 220] },
-  { p: 0.88, pos: [790, 300, 320], look: [820, 270, 220] },
-  // ORBIT — keep climbing above the clouds to the planet horizon
-  { p: 0.95, pos: [700, 1200, 400], look: [1400, 1300, -800] },
-  { p: 1.0, pos: [650, 2400, 450], look: [1600, 2400, -1200] },
-]
+const v = (x: number, y: number, z: number) => new Vector3(x, y, z)
+const range = (id: SectionId) => SECTIONS.find((s) => s.id === id)!
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 
-const posCurve = new CatmullRomCurve3(KEYFRAMES.map((k) => new Vector3(...k.pos)), false, 'centripetal')
-const lookCurve = new CatmullRomCurve3(KEYFRAMES.map((k) => new Vector3(...k.look)), false, 'centripetal')
+function projectKeyframes(): Keyframe[] {
+  const { start, end } = range('projects')
+  const n = PROJECT_PANELS.length
+  const slot = (end - start) / n
+  return PROJECT_PANELS.flatMap((panel, i) => {
+    const s0 = start + i * slot
+    const approach = projectCameraPose(i, 52)
+    const hold = projectCameraPose(i, 36)
+    return [
+      { p: s0 + slot * 0.2, pos: approach.pos, look: panel.center.clone() },
+      // lingering here (camera barely moves for ~half the slot) is the "hold"
+      { p: s0 + slot * 0.7, pos: hold.pos, look: panel.center.clone() },
+    ]
+  })
+}
+
+function buildKeyframes(): Keyframe[] {
+  const about = range('about')
+  const skills = range('skills')
+  const contact = range('contact')
+  const tower = SKILLS_TOWER.center
+  const roof = CONTACT_ROOF.center
+  const aboutFace = ABOUT_PANEL.center
+
+  return [
+    // HERO — straight down on the plaza and the floating name
+    // (the small +Z offset fixes which way is 'up' on screen; it must dwarf the sway)
+    { p: 0.0, pos: v(0, 620, 45), look: v(0, 0, 0) },
+    { p: 0.08, pos: v(0, 560, 70), look: v(0, 0, 0) },
+    // DIVE — pitch forward and drop between the towers
+    { p: 0.14, pos: v(40, 320, 160), look: v(80, 60, -20) },
+    { p: 0.2, pos: v(95, 120, 40), look: aboutFace.clone() },
+    // ABOUT — come around to face the bio billboard and glide past it
+    { p: lerp(about.start, about.end, 0.35), pos: v(aboutFace.x - 40, aboutFace.y, aboutFace.z + 72), look: aboutFace.clone() },
+    { p: lerp(about.start, about.end, 0.7), pos: v(aboutFace.x + 4, aboutFace.y - 4, aboutFace.z + 62), look: aboutFace.clone() },
+    { p: about.end, pos: v(250, 52, -22), look: v(330, 44, 0) },
+    // PROJECTS — weave down the avenue, pausing at each billboard
+    ...projectKeyframes(),
+    // SKILLS — climb around the skills tower as its floors light up
+    { p: lerp(skills.start, skills.end, 0.1), pos: v(tower.x - 100, 70, -60), look: v(tower.x, 80, tower.z - 31) },
+    { p: lerp(skills.start, skills.end, 0.45), pos: v(tower.x - 40, 118, -95), look: v(tower.x, 122, tower.z - 31) },
+    { p: lerp(skills.start, skills.end, 0.8), pos: v(tower.x + 50, 158, -90), look: v(tower.x + 15, 160, tower.z - 20) },
+    { p: skills.end, pos: v(tower.x + 90, 185, -40), look: v(tower.x + 31, 175, tower.z) },
+    // CONTACT — rise over the roof edge to the beacons around the mast
+    { p: lerp(contact.start, contact.end, 0.35), pos: v(roof.x + 80, 215, roof.z - 100), look: v(roof.x, 235, roof.z) },
+    { p: lerp(contact.start, contact.end, 0.75), pos: v(roof.x + 50, 262, roof.z - 45), look: v(roof.x, 250, roof.z) },
+    { p: contact.end, pos: v(roof.x + 42, 272, roof.z - 36), look: v(roof.x, 252, roof.z) },
+    // ORBIT — keep climbing above the clouds to the planet horizon (built in M6)
+    { p: 0.95, pos: v(780, 1200, 300), look: v(1400, 1300, -800) },
+    { p: 1.0, pos: v(700, 2400, 400), look: v(1600, 2400, -1200) },
+  ]
+}
+
+const KEYFRAMES = buildKeyframes()
+
+const posCurve = new CatmullRomCurve3(KEYFRAMES.map((k) => k.pos), false, 'centripetal')
+const lookCurve = new CatmullRomCurve3(KEYFRAMES.map((k) => k.look), false, 'centripetal')
 
 /** Map scroll progress to the curve parameter so each keyframe lands at its own `p`. */
 function progressToT(progress: number) {
@@ -64,7 +89,7 @@ export function sampleFlight(progress: number, outPos: Vector3, outLook: Vector3
   lookCurve.getPoint(t, outLook)
 }
 
-/** Points along the path, for the debug line. */
+/** Points along the path, for corridor clearing. */
 export function flightPathPoints(samples = 400) {
   return posCurve.getPoints(samples)
 }

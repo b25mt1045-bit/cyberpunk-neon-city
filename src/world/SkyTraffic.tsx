@@ -20,8 +20,8 @@ import { PLAZA_RADIUS } from './cityLayout'
 // positioned on the CPU each frame. Each has a body and an additive light trail.
 
 const HALF_SPAN = 1250
-const BODY = { len: 7, h: 1.6, w: 3 }
-const TRAIL_LEN = 34
+const BODY = { len: 11, h: 2.6, w: 4.8 }
+const TRAIL_LEN = 46
 
 interface Lane {
   kind: 'line' | 'ring'
@@ -209,8 +209,8 @@ export function SkyTraffic({ density = 1 }: { density?: number }) {
       o.updateMatrix()
       b.setMatrixAt(i, o.matrix)
 
-      o.position.set(x - hx * (TRAIL_LEN / 2 + BODY.len / 2), y - 0.3, z - hz * (TRAIL_LEN / 2 + BODY.len / 2))
-      o.scale.set(TRAIL_LEN, 0.35, 1.6)
+      o.position.set(x - hx * (TRAIL_LEN / 2 + BODY.len / 2), y - 0.5, z - hz * (TRAIL_LEN / 2 + BODY.len / 2))
+      o.scale.set(TRAIL_LEN, 0.6, 2.6)
       o.updateMatrix()
       tr.setMatrixAt(i, o.matrix)
     })

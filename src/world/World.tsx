@@ -1,6 +1,7 @@
 import { Atmosphere } from './Atmosphere'
 import { City } from './City'
 import { Ground } from './Ground'
+import { Landmarks } from './PortfolioLandmarks'
 import { Plaza } from './Plaza'
 import { RoofLights } from './RoofLights'
 import { SkyTraffic } from './SkyTraffic'
@@ -16,6 +17,7 @@ export function World() {
       <Traffic />
       <RoofLights />
       <SkyTraffic />
+      <Landmarks />
     </>
   )
 }

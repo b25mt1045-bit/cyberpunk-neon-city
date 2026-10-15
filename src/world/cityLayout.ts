@@ -1,4 +1,5 @@
-import { LANDMARKS, flightPathPoints } from '../camera/flightPath'
+import { flightPathPoints } from '../camera/flightPath'
+import { LANDMARKS } from './landmarks'
 
 // Deterministic city plan. Every building is a box; hero megatowers are stacks of boxes.
 // All of it renders as ONE InstancedMesh (see City.tsx).
