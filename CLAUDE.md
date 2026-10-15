@@ -50,12 +50,17 @@ The orbit epilogue (user-approved): rise above the clouds to a planet horizon; n
 
 ## Milestones
 - [x] M1 setup, empty scene, scroll camera on placeholder path
-- [ ] M2 procedural city, shader windows, edge glow, fog, bloom
+- [x] M2 procedural city, shader windows, edge glow, fog, bloom
 - [ ] M3 plaza hologram, traffic trails, rooftop lights, rain, flying vehicles
 - [ ] M4 full flight path, landmarks, banking/sway/parallax
 - [ ] M5 HUD, loader, nav, content wiring, project panels
 - [ ] M6 jellyfish, glitch transitions, sound, orbit epilogue, polish
 - [ ] M7 quality tiers, mobile, reduced motion, SEO/OG, Vercel deploy
+
+## Shader rules (learned the hard way)
+- Every emissive shader must output finite HDR: clamp distances used in `exp()` to >= 0 and cap the final color (`min(color, vec3(24.0))`). With MSAA, fragments can be evaluated slightly outside a face, extrapolated values overflow the half-float buffers, and Bloom smears the resulting NaN over the entire frame (symptom: the whole screen goes black at certain camera positions).
+- The city is ONE InstancedMesh (`src/world/City.tsx`) with per-instance `aDims`, `aSeed`, `aAccent`. Add new building variety in the shader, not as new meshes.
+- Dev aids: `?nofx` disables post-processing; `window.__gl` exposes the renderer in dev.
 
 ## Known follow-ups
 - HTML chapter text timing vs camera (text for the next chapter scrolls in early) → fix with the HUD overlay in M5.

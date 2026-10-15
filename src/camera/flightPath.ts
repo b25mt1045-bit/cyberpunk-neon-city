@@ -36,8 +36,8 @@ const KEYFRAMES: Keyframe[] = [
   { p: 0.66, pos: [720, 90, -80], look: [780, 110, 0] },
   { p: 0.74, pos: [860, 170, -40], look: [780, 170, 0] },
   // CONTACT — rise to the antenna rooftop
-  { p: 0.81, pos: [880, 240, 140], look: [820, 250, 220] },
-  { p: 0.88, pos: [760, 290, 280], look: [820, 270, 220] },
+  { p: 0.81, pos: [900, 230, 150], look: [820, 250, 220] },
+  { p: 0.88, pos: [790, 300, 320], look: [820, 270, 220] },
   // ORBIT — keep climbing above the clouds to the planet horizon
   { p: 0.95, pos: [700, 1200, 400], look: [1400, 1300, -800] },
   { p: 1.0, pos: [650, 2400, 450], look: [1600, 2400, -1200] },
