@@ -36,3 +36,214 @@ html.lenis body {
 .lenis.lenis-stopped {
   overflow: hidden;
 }
+
+/* ── HUD ─────────────────────────────────────────────────── */
+
+/* the HUD powers on once the loader hands over */
+.hud {
+  opacity: 0;
+  transition: opacity 0.8s ease 0.2s;
+}
+.hud--on {
+  opacity: 1;
+}
+
+.hud-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: color-mix(in srgb, var(--color-cyan) 60%, transparent);
+}
+
+.hud-link {
+  color: inherit;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+.hud-link:hover,
+.hud-link[aria-current] {
+  color: var(--color-cyan);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--color-cyan) 60%, transparent);
+}
+.hud-link:focus-visible,
+.hud-button:focus-visible,
+.a11y-card :focus-visible {
+  outline: 1px solid var(--color-cyan);
+  outline-offset: 4px;
+}
+
+.hud-button {
+  display: inline-block;
+  border: 1px solid color-mix(in srgb, var(--color-cyan) 60%, transparent);
+  padding: 0.45rem 0.9rem;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+  transition: background 0.2s, color 0.2s;
+}
+.hud-button:hover {
+  background: var(--color-cyan);
+  color: var(--color-bg);
+}
+
+.hud-card {
+  border-left: 1px solid color-mix(in srgb, var(--color-cyan) 50%, transparent);
+  padding: 0.25rem 0 0.25rem 1rem;
+}
+.hud-card__body {
+  animation: hud-in 0.5s ease both;
+}
+.hud-cue::after {
+  content: ' ↓';
+  display: inline-block;
+  animation: hud-bob 1.6s ease-in-out infinite;
+}
+
+/* legibility scrims + glow on HUD text */
+.hud-scrim {
+  position: fixed;
+  z-index: 15;
+  pointer-events: none;
+}
+.hud-scrim--top {
+  inset: 0 0 auto 0;
+  height: 9rem;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--color-bg) 75%, transparent), transparent);
+}
+.hud-scrim--corner {
+  left: 0;
+  bottom: 0;
+  width: min(40rem, 100vw);
+  height: 22rem;
+  background: radial-gradient(ellipse at bottom left, color-mix(in srgb, var(--color-bg) 85%, transparent) 0%, transparent 70%);
+}
+.hud header,
+.hud aside,
+.hud dl {
+  text-shadow: 0 0 12px var(--color-bg), 0 0 2px var(--color-bg);
+}
+
+/* keyboard-revealed fallback card for the semantic sections */
+/* while keyboard focus is in the semantic content, it replaces the HUD card */
+body:has(.a11y-card:focus-within) .hud-card {
+  opacity: 0;
+}
+.a11y-card:focus-within {
+  max-width: 28rem;
+  max-height: 72vh;
+  overflow-y: auto;
+  border: 1px solid color-mix(in srgb, var(--color-cyan) 50%, transparent);
+  background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+  padding: 1.25rem 1.5rem;
+  line-height: 1.6;
+}
+.a11y-card:focus-within h1,
+.a11y-card:focus-within h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+.a11y-card:focus-within a,
+.a11y-card:focus-within button {
+  color: var(--color-teal);
+  text-decoration: underline;
+}
+
+.project-panel {
+  animation: panel-in 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* ── custom cursor ──────────────────────────────────────── */
+html.custom-cursor,
+html.custom-cursor * {
+  cursor: none !important;
+}
+.hud-cursor {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.hud-cursor[data-visible='true'] {
+  opacity: 1;
+}
+.hud-cursor > span {
+  position: absolute;
+  display: block;
+  background: var(--color-cyan);
+  box-shadow: 0 0 6px var(--color-cyan);
+}
+.hud-cursor__h {
+  width: 14px;
+  height: 1px;
+  left: -7px;
+  top: 0;
+}
+.hud-cursor__v {
+  width: 1px;
+  height: 14px;
+  left: 0;
+  top: -7px;
+}
+.hud-cursor__ring {
+  width: 10px;
+  height: 10px;
+  left: -5px;
+  top: -5px;
+  background: transparent !important;
+  border: 1px solid var(--color-cyan);
+  transform: rotate(45deg) scale(0.6);
+  opacity: 0.6;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s, border-color 0.25s;
+}
+.hud-cursor[data-active='true'] .hud-cursor__ring {
+  transform: rotate(45deg) scale(2.6);
+  opacity: 1;
+  border-color: var(--color-magenta);
+}
+
+/* ── loader ─────────────────────────────────────────────── */
+.loader__line {
+  animation: hud-in 0.3s ease both;
+}
+.loader--leaving {
+  animation: loader-out 0.9s steps(1, end) forwards, loader-fade 0.9s ease forwards;
+}
+
+@keyframes hud-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes hud-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+@keyframes panel-in {
+  from { opacity: 0; clip-path: inset(0 0 100% 0); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+/* a few hard glitch slices before the fade */
+@keyframes loader-out {
+  0% { clip-path: inset(0 0 0 0); }
+  15% { clip-path: inset(12% 0 40% 0); transform: translateX(-8px); }
+  25% { clip-path: inset(55% 0 8% 0); transform: translateX(10px); }
+  35% { clip-path: inset(0 0 0 0); transform: none; }
+}
+@keyframes loader-fade {
+  0%, 40% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-card__body,
+  .loader__line,
+  .project-panel,
+  .loader--leaving,
+  .hud-cue::after {
+    animation: none !important;
+  }
+  .loader--leaving { opacity: 0; }
+}

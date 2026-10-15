@@ -1,9 +1,15 @@
 import type { ReactNode } from 'react'
 import { content } from '../content'
+import { useApp } from '../store'
+import { projectHoldProgress } from '../scroll/navigation'
+import { scrollToProgress } from '../scroll/useSmoothScroll'
 import { SCROLL_VH, SECTIONS, type SectionId } from './chapters'
 
-// Real, semantic HTML for every chapter. Each <section> is sized so its top
-// reaches the viewport top exactly when scroll progress hits its `start`.
+// The real document: every piece of content as semantic HTML, for screen readers, SEO and
+// keyboard users. Each <section> is sized so its top reaches the viewport exactly when scroll
+// progress hits its `start`, which is what gives the page its scroll length.
+// Visually the HUD and the 3D scene present this content, so the text is screen-reader-only
+// until keyboard focus lands inside it; then it shows as a readable card.
 
 function Chapter({ id, children }: { id: SectionId; children: ReactNode }) {
   const s = SECTIONS.find((x) => x.id === id)!
@@ -11,67 +17,84 @@ function Chapter({ id, children }: { id: SectionId; children: ReactNode }) {
   const height = (s.end - s.start) * SCROLL_VH + (isLast ? 100 : 0)
   return (
     <section id={id} aria-label={s.label} className="relative" style={{ height: `${height}vh` }}>
-      <div className="sticky top-0 flex min-h-screen items-center px-6 md:px-16">
-        <div className="pointer-events-auto max-w-xl">{children}</div>
+      <div className="sticky top-0 flex min-h-screen items-center px-4 md:px-8">
+        <div className="a11y-card pointer-events-auto sr-only focus-within:not-sr-only">{children}</div>
       </div>
     </section>
   )
 }
 
-const kicker = 'font-mono text-xs uppercase tracking-[0.3em] text-cyan'
+function openProject(i: number) {
+  scrollToProgress(projectHoldProgress(i), () => useApp.getState().openProject(i))
+}
 
 export function Sections() {
   return (
     <main className="pointer-events-none relative z-10">
       <Chapter id="hero">
-        <p className={kicker}>{content.title}</p>
-        <h1 className="sr-only">{content.name}</h1>
-        <p className="mt-4 text-lg text-white/70">{content.tagline}</p>
+        <h1>{content.name}</h1>
+        <p>{content.title}</p>
+        <p>{content.tagline}</p>
       </Chapter>
 
       <Chapter id="dive">
-        <p className={kicker}>Descending</p>
+        <p>Descending into the city.</p>
       </Chapter>
 
       <Chapter id="about">
-        <h2 className="font-display text-4xl font-semibold">About</h2>
+        <h2>About</h2>
         {content.bio.map((para) => (
-          <p key={para} className="mt-4 text-white/75">
-            {para}
-          </p>
+          <p key={para}>{para}</p>
         ))}
+        <p>Based in {content.location}.</p>
       </Chapter>
 
       <Chapter id="projects">
-        <h2 className="font-display text-4xl font-semibold">Projects</h2>
-        <ul className="mt-4 space-y-3">
-          {content.projects.map((p) => (
+        <h2>Projects</h2>
+        <ul>
+          {content.projects.map((p, i) => (
             <li key={p.id}>
-              <h3 className="font-display text-xl text-magenta">{p.title}</h3>
-              <p className="text-sm text-white/70">{p.description}</p>
+              <h3>{p.title}</h3>
+              <p>{p.description}</p>
+              <p>Tech: {p.tech.join(', ')}</p>
+              <ul>
+                {p.links.map((l) => (
+                  <li key={l.href}>
+                    <a href={l.href} target="_blank" rel="noreferrer">
+                      {l.label}: {p.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <button type="button" onClick={() => openProject(i)}>
+                Fly to {p.title}
+              </button>
             </li>
           ))}
         </ul>
       </Chapter>
 
       <Chapter id="skills">
-        <h2 className="font-display text-4xl font-semibold">Skills</h2>
-        <dl className="mt-4 space-y-2">
+        <h2>Skills</h2>
+        <dl>
           {content.skills.map((g) => (
             <div key={g.label}>
-              <dt className={kicker}>{g.label}</dt>
-              <dd className="text-white/75">{g.items.join(' · ')}</dd>
+              <dt>{g.label}</dt>
+              <dd>{g.items.join(', ')}</dd>
             </div>
           ))}
         </dl>
       </Chapter>
 
       <Chapter id="contact">
-        <h2 className="font-display text-4xl font-semibold">Contact</h2>
-        <ul className="mt-4 flex gap-4">
+        <h2>Contact</h2>
+        <p>
+          Email: <a href={`mailto:${content.contact.email}`}>{content.contact.email}</a>
+        </p>
+        <ul>
           {content.contact.links.map((l) => (
             <li key={l.label}>
-              <a className="font-mono text-teal underline-offset-4 hover:underline" href={l.href}>
+              <a href={l.href} target={l.href.startsWith('mailto:') ? undefined : '_blank'} rel="noreferrer">
                 {l.label}
               </a>
             </li>
@@ -80,7 +103,10 @@ export function Sections() {
       </Chapter>
 
       <Chapter id="orbit">
-        <p className={kicker}>Signal lost · end of transmission</p>
+        <p>End of the flight.</p>
+        <a href="#hero" onClick={(e) => (e.preventDefault(), scrollToProgress(0))}>
+          Back to the top
+        </a>
       </Chapter>
     </main>
   )

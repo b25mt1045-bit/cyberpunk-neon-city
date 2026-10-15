@@ -4,14 +4,18 @@ import { MathUtils, Vector3 } from 'three'
 import { useApp } from '../store'
 import { projectCameraPose } from '../world/landmarks'
 import { sampleFlight } from './flightPath'
+import { telemetry } from './telemetry'
 
 const pos = new Vector3()
 const look = new Vector3()
 const fwd = new Vector3()
 const right = new Vector3()
 const up = new Vector3()
+const side = new Vector3()
+const zoomLook = new Vector3()
+const worldUp = new Vector3(0, 1, 0)
 
-const ZOOM_DISTANCE = 21
+const ZOOM_DISTANCE = 30
 const easeInOut = (t: number) => t * t * (3 - 2 * t)
 
 /**
@@ -47,8 +51,16 @@ export function CameraRig() {
     zoom.current = MathUtils.damp(zoom.current, activeProject !== null ? 1 : 0, 3.2, delta)
     const z = easeInOut(zoom.current)
     if (zoomPose.current && z > 0.0005) {
-      pos.lerp(zoomPose.current.pos, z)
-      look.lerp(zoomPose.current.look, z)
+      // frame the billboard clear of the detail panel: left of center on wide screens
+      // (panel on the right), higher up on narrow ones (panel is a bottom sheet)
+      const zp = zoomPose.current
+      zoomLook.copy(zp.look)
+      if (state.size.width >= 768) {
+        side.subVectors(zp.look, zp.pos).cross(worldUp).normalize()
+        zoomLook.addScaledVector(side, 5)
+      } else zoomLook.y -= 6
+      pos.lerp(zp.pos, z)
+      look.lerp(zoomLook, z)
     }
 
     const motion = reducedMotion ? 0 : 1 - z
@@ -63,6 +75,9 @@ export function CameraRig() {
       look.addScaledVector(right, state.pointer.x * k).addScaledVector(up, state.pointer.y * k * 0.6)
     }
 
+    telemetry.speed = MathUtils.damp(telemetry.speed, pos.distanceTo(telemetry.position) / Math.max(delta, 1e-3), 4, delta)
+    telemetry.position.copy(pos)
+
     if (!lookCurrent.current) lookCurrent.current = look.clone()
     lookCurrent.current.lerp(look, 1 - Math.exp(-8 * delta))
     camera.position.copy(pos)
@@ -74,6 +89,7 @@ export function CameraRig() {
     let bankTarget = 0
     if (horizontal > 0.3) {
       const yaw = Math.atan2(fwd.x, fwd.z)
+      telemetry.heading = (MathUtils.radToDeg(Math.atan2(fwd.x, -fwd.z)) + 360) % 360
       if (prevYaw.current !== null) {
         const dYaw = Math.atan2(Math.sin(yaw - prevYaw.current), Math.cos(yaw - prevYaw.current))
         bankTarget = MathUtils.clamp((dYaw / Math.max(delta, 1e-3)) * 0.3, -0.18, 0.18) * motion

@@ -40,6 +40,11 @@ Fonts: Chakra Petch (display), JetBrains Mono (HUD/data).
 - Note: macOS is case-insensitive. Don't create files whose names differ only in case (e.g. `sections.ts` vs `Sections.tsx`, `landmarks.ts` vs `Landmarks.tsx`). Already hit twice.
 - Hologram panels (`src/world/holo/`): canvas-drawn artwork + `createHoloMaterial` (scanlines, flicker, glitch bands, `uReveal`, `uHover`). Use `backing` when something could show through an additive panel.
 - The HTML overlay `<main>` is `pointer-events-none` so clicks reach the 3D scene; text blocks re-enable pointer events.
+- **Two layers of UI (M5):** `src/sections/Sections.tsx` is the real document (semantic, complete, screen-reader-only until keyboard focus enters it, then shown as a card). `src/ui/hud/*` is the visual HUD driven by `store.section`; its chapter card is `aria-hidden` with mouse-only controls. The top nav is the one HUD piece that is fully accessible. Keep any new content in both.
+- Nav and project jump targets live in `src/scroll/navigation.ts`; `scrollToProgress(p, onComplete)` flies the camera there.
+- Loader (`src/ui/Loader.tsx`) tracks real milestones reported by `src/world/Preloader.tsx` (fonts, WebGL, `compileAsync`, warm-up frames) and locks scroll until done.
+- 3D hover sets `store.pointerHint`, which drives the custom cursor (`src/ui/Cursor.tsx`); don't set `document.body.style.cursor`.
+- Dev server: `.claude/launch.json` config "dev" (port 5173).
 
 ## World layout (meters, plaza at origin)
 All landmark poses live in `src/world/landmarks.ts`; the camera keyframes in `flightPath.ts` are derived from them, and the city generator clears a corridor around the path automatically.
@@ -57,7 +62,7 @@ The orbit epilogue (user-approved): rise above the clouds to a planet horizon; n
 - [x] M2 procedural city, shader windows, edge glow, fog, bloom
 - [x] M3 plaza hologram, traffic trails, rooftop lights, flying vehicles (no rain, per user)
 - [x] M4 full flight path, landmarks, banking/sway/parallax
-- [ ] M5 HUD, loader, nav, content wiring, project panels
+- [x] M5 HUD, loader, nav, content wiring, project panels
 - [ ] M6 jellyfish, glitch transitions, sound, orbit epilogue, polish
 - [ ] M7 quality tiers, mobile, reduced motion, SEO/OG, Vercel deploy
 
@@ -69,5 +74,4 @@ The orbit epilogue (user-approved): rise above the clouds to a planet horizon; n
 ## Known follow-ups
 - Wet-ground reflections were dropped along with rain; revisit in M6 polish only if the ground looks too flat.
 - Plaza sigil: avoid religious or real-world symbols (e.g. no hexagram); keep geometry abstract and tied to the 8 roads.
-- HTML chapter text timing vs camera (text for the next chapter scrolls in early) → fix with the HUD overlay in M5.
 - `THREE.Clock` deprecation warning comes from R3F internals; harmless.

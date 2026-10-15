@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { useFrame, type ThreeEvent } from '@react-three/fiber'
 import { CanvasTexture, DoubleSide, MathUtils, SRGBColorSpace, type ShaderMaterial } from 'three'
+import { useApp } from '../../store'
 import { createHoloMaterial } from '../../shaders/holo'
 import { fontsReady, type Draw } from './panels'
 
@@ -78,7 +79,7 @@ export function HoloPanel({ draw, px, size, position, rotation, boost, seed, onF
         interactive
           ? (e) => {
               e.stopPropagation()
-              document.body.style.cursor = 'pointer'
+              useApp.getState().setPointerHint(true)
               onHover?.(true)
             }
           : undefined
@@ -86,7 +87,7 @@ export function HoloPanel({ draw, px, size, position, rotation, boost, seed, onF
       onPointerOut={
         interactive
           ? () => {
-              document.body.style.cursor = ''
+              useApp.getState().setPointerHint(false)
               onHover?.(false)
             }
           : undefined

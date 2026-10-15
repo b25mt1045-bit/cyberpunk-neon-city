@@ -1,9 +1,13 @@
 import { Canvas } from '@react-three/fiber'
 import { CameraRig } from './camera/CameraRig'
 import { World } from './world/World'
+import { Preloader } from './world/Preloader'
 import { Effects } from './fx/Effects'
 import { Sections } from './sections/Sections'
-import { DebugReadout } from './ui/DebugReadout'
+import { Hud } from './ui/hud/Hud'
+import { Loader } from './ui/Loader'
+import { Cursor } from './ui/Cursor'
+import { ProjectPanel } from './ui/ProjectPanel'
 import { useSmoothScroll } from './scroll/useSmoothScroll'
 
 // dev aid: ?nofx disables post-processing to isolate scene vs effect issues
@@ -18,7 +22,7 @@ export default function App() {
         <Canvas
           flat
           dpr={[1, 1.5]}
-          camera={{ fov: 55, near: 1, far: 6000, position: [0, 620, 2] }}
+          camera={{ fov: 55, near: 1, far: 6000, position: [0, 620, 45] }}
           gl={{ antialias: false, powerPreference: 'high-performance' }}
           onCreated={({ gl }) => {
             // dev aid: lets tooling read draw calls / triangles
@@ -28,10 +32,14 @@ export default function App() {
           <World />
           {!noFx && <Effects />}
           <CameraRig />
+          <Preloader />
         </Canvas>
       </div>
       <Sections />
-      {import.meta.env.DEV && <DebugReadout />}
+      <Hud />
+      <ProjectPanel />
+      <Loader />
+      <Cursor />
     </>
   )
 }

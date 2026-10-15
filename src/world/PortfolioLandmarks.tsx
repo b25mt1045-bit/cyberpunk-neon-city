@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { Billboard } from '@react-three/drei'
 import {
   AdditiveBlending,
@@ -36,16 +36,21 @@ const skills = SECTIONS.find((s) => s.id === 'skills')!
 // ── HERO ─────────────────────────────────────────────────────
 function HeroName() {
   const draw = useMemo(() => drawHeroName(content.name, content.title), [])
+  // shrink on portrait screens so the name always fits across the view
+  const aspect = useThree((s) => s.size.width / s.size.height)
+  const scale = Math.min(1, aspect / 0.85)
   return (
-    <HoloPanel
-      draw={draw}
-      px={[2048, 662]}
-      size={[HERO_NAME.width, HERO_NAME.height]}
-      position={[0, HERO_NAME.y, 0]}
-      rotation={[-Math.PI / 2, 0, 0]}
-      boost={2.2}
-      seed={1}
-    />
+    <group scale={[scale, 1, scale]}>
+      <HoloPanel
+        draw={draw}
+        px={[2048, 662]}
+        size={[HERO_NAME.width, HERO_NAME.height]}
+        position={[0, HERO_NAME.y, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        boost={2.2}
+        seed={1}
+      />
+    </group>
   )
 }
 
@@ -235,7 +240,7 @@ function ContactBeacon({ index }: { index: number }) {
     beam.uniforms.uTime.value = s.clock.elapsedTime + index
     beam.uniforms.uHover.value = MathUtils.damp(beam.uniforms.uHover.value, hovered ? 1 : 0, 8, delta)
   })
-  useEffect(() => () => void (document.body.style.cursor = ''), [])
+  useEffect(() => () => useApp.getState().setPointerHint(false), [])
 
   const go = () => {
     if (link.href.startsWith('mailto:')) window.location.href = link.href
