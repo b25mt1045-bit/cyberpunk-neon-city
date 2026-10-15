@@ -1,0 +1,8 @@
+node_modules
+dist
+.DS_Store
+.vercel
+*.local
+# bundled skill demos (images + three.min.js), not needed in the repo
+.claude/skills/*/demo/
+.claude/settings.local.json
