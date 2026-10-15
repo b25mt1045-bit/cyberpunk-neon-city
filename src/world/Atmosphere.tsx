@@ -2,9 +2,14 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { AdditiveBlending, Color, FogExp2, MathUtils, Mesh, ShaderMaterial } from 'three'
 import { palette } from '../theme'
+import { aboveClouds } from './landmarks'
+import { deckWhiteout } from './Orbit'
 
 // Exponential fog whose density follows camera altitude (thick haze in the streets,
 // clearer from above), plus a few drifting additive haze layers between the towers.
+
+const BG = new Color(palette.bg)
+const CLOUD = new Color(palette.purple).lerp(new Color('#ccbfff'), 0.55).multiplyScalar(0.6)
 
 const HAZE_LAYERS = [
   { y: 18, color: palette.purple, opacity: 0.12 },
@@ -75,7 +80,7 @@ function HazeLayer({ y, color, opacity }: (typeof HAZE_LAYERS)[number]) {
     material.uniforms.uTime.value = s.clock.elapsedTime + y
     // An edge-on plane through the camera can rasterize NaNs, which bloom smears over
     // the whole frame. Hide the layer while the camera is passing through it.
-    ref.current!.visible = Math.abs(s.camera.position.y - y) > 4
+    ref.current!.visible = Math.abs(s.camera.position.y - y) > 4 && !aboveClouds(s.camera.position.y)
   })
 
   return (
@@ -87,17 +92,23 @@ function HazeLayer({ y, color, opacity }: (typeof HAZE_LAYERS)[number]) {
 
 export function Atmosphere() {
   const fog = useMemo(() => new FogExp2(new Color(palette.bg).getHex(), 0.0014), [])
+  const background = useMemo(() => new Color(palette.bg), [])
 
   useFrame(({ camera }) => {
     // 0.0026 at street level → 0.0008 from 600 m up
     const t = MathUtils.smoothstep(camera.position.y, 30, 500)
     fog.density = MathUtils.lerp(0.0026, 0.0008, t)
+    // inside the cloud deck everything dissolves into lit cloud
+    const white = deckWhiteout(camera.position.y)
+    fog.density += white * 0.02
+    fog.color.copy(BG).lerp(CLOUD, white)
+    background.copy(fog.color)
   })
 
   return (
     <>
       <primitive object={fog} attach="fog" />
-      <color attach="background" args={[palette.bg]} />
+      <primitive object={background} attach="background" />
       {HAZE_LAYERS.map((l) => (
         <HazeLayer key={l.y} {...l} />
       ))}

@@ -1,23 +1,39 @@
+import { useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import type { Group } from 'three'
 import { Atmosphere } from './Atmosphere'
 import { City } from './City'
 import { Ground } from './Ground'
 import { Landmarks } from './PortfolioLandmarks'
+import { Muse } from './Muse'
+import { Orbit } from './Orbit'
 import { Plaza } from './Plaza'
 import { RoofLights } from './RoofLights'
 import { SkyTraffic } from './SkyTraffic'
 import { Traffic } from './Traffic'
+import { aboveClouds } from './landmarks'
 
 export function World() {
+  // once the camera is above the cloud deck, the whole city is hidden under it
+  const city = useRef<Group>(null)
+  useFrame(({ camera }) => {
+    city.current!.visible = !aboveClouds(camera.position.y)
+  })
+
   return (
     <>
       <Atmosphere />
-      <Ground />
-      <Plaza />
-      <City />
-      <Traffic />
-      <RoofLights />
-      <SkyTraffic />
-      <Landmarks />
+      <Orbit />
+      <group ref={city}>
+        <Ground />
+        <Plaza />
+        <City />
+        <Traffic />
+        <RoofLights />
+        <SkyTraffic />
+        <Landmarks />
+        <Muse />
+      </group>
     </>
   )
 }

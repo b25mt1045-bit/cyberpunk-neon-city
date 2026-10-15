@@ -47,6 +47,8 @@ interface HoloPanelProps {
   rotation?: [number, number, number]
   boost?: number
   seed?: number
+  /** < 1 reduces how much the haze dims this panel */
+  fogScale?: number
   /** called every frame with the material, e.g. to drive uReveal */
   onFrame?: (m: ShaderMaterial) => void
   hovered?: boolean
@@ -56,9 +58,9 @@ interface HoloPanelProps {
   backing?: boolean
 }
 
-export function HoloPanel({ draw, px, size, position, rotation, boost, seed, onFrame, hovered, onClick, onHover, backing }: HoloPanelProps) {
+export function HoloPanel({ draw, px, size, position, rotation, boost, seed, fogScale, onFrame, hovered, onClick, onHover, backing }: HoloPanelProps) {
   const texture = useCanvasTexture(px[0], px[1], draw)
-  const material = useMemo(() => createHoloMaterial(texture, { boost, seed }), [texture, boost, seed])
+  const material = useMemo(() => createHoloMaterial(texture, { boost, seed, fogScale }), [texture, boost, seed, fogScale])
 
   useFrame((s, delta) => {
     const u = material.uniforms

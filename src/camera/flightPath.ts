@@ -60,9 +60,10 @@ function buildKeyframes(): Keyframe[] {
     { p: lerp(contact.start, contact.end, 0.35), pos: v(roof.x + 80, 215, roof.z - 100), look: v(roof.x, 235, roof.z) },
     { p: lerp(contact.start, contact.end, 0.75), pos: v(roof.x + 50, 262, roof.z - 45), look: v(roof.x, 250, roof.z) },
     { p: contact.end, pos: v(roof.x + 42, 272, roof.z - 36), look: v(roof.x, 252, roof.z) },
-    // ORBIT — keep climbing above the clouds to the planet horizon (built in M6)
-    { p: 0.95, pos: v(780, 1200, 300), look: v(1400, 1300, -800) },
-    { p: 1.0, pos: v(700, 2400, 400), look: v(1600, 2400, -1200) },
+    // ORBIT — climb through the cloud deck (y≈760) and settle looking down at the curved
+    // planet horizon, dawn ahead
+    { p: 0.95, pos: v(780, 1200, 300), look: v(1400, 1150, -800) },
+    { p: 1.0, pos: v(700, 2400, 400), look: v(1600, 1700, -1200) },
   ]
 }
 

@@ -18,11 +18,23 @@ interface AppState {
   entered: boolean
   /** The pointer is over something clickable in the 3D scene (drives the custom cursor). */
   pointerHint: boolean
+  /** Generated ambient sound (off by default; the choice is remembered per browser). */
+  soundOn: boolean
   setProgress: (progress: number, section: SectionId) => void
   openProject: (index: number | null) => void
   markBoot: (step: BootStep) => void
   enter: () => void
   setPointerHint: (on: boolean) => void
+  setSound: (on: boolean) => void
+}
+
+const SOUND_KEY = 'megacity:sound'
+function readSoundPref() {
+  try {
+    return localStorage.getItem(SOUND_KEY) === 'on'
+  } catch {
+    return false
+  }
 }
 
 export const useApp = create<AppState>((set, get) => ({
@@ -35,6 +47,7 @@ export const useApp = create<AppState>((set, get) => ({
   boot: { fonts: false, gl: false, compile: false, frames: false },
   entered: false,
   pointerHint: false,
+  soundOn: typeof window !== 'undefined' && readSoundPref(),
   setProgress: (progress, section) => {
     const { activeProject, activeProjectProgress } = get()
     const leave = activeProject !== null && Math.abs(progress - activeProjectProgress) > 0.006
@@ -44,4 +57,12 @@ export const useApp = create<AppState>((set, get) => ({
   markBoot: (step) => set((s) => (s.boot[step] ? s : { boot: { ...s.boot, [step]: true } })),
   enter: () => set({ entered: true }),
   setPointerHint: (on) => set({ pointerHint: on }),
+  setSound: (on) => {
+    try {
+      localStorage.setItem(SOUND_KEY, on ? 'on' : 'off')
+    } catch {
+      // storage blocked: the toggle still works for this visit
+    }
+    set({ soundOn: on })
+  },
 }))

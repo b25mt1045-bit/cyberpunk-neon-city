@@ -9,12 +9,14 @@ import { Loader } from './ui/Loader'
 import { Cursor } from './ui/Cursor'
 import { ProjectPanel } from './ui/ProjectPanel'
 import { useSmoothScroll } from './scroll/useSmoothScroll'
+import { useSound } from './audio/useSound'
 
 // dev aid: ?nofx disables post-processing to isolate scene vs effect issues
 const noFx = import.meta.env.DEV && new URLSearchParams(location.search).has('nofx')
 
 export default function App() {
   useSmoothScroll()
+  useSound()
 
   return (
     <>

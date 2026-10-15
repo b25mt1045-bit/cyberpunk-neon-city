@@ -10,6 +10,24 @@ function go(e: React.MouseEvent, target: number) {
   scrollToProgress(target)
 }
 
+/** Sound toggle with a tiny animated level meter. */
+function SoundToggle() {
+  const on = useApp((s) => s.soundOn)
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={() => useApp.getState().setSound(!on)}
+      className="hud-link flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em]"
+    >
+      <span aria-hidden className={`sound-meter ${on ? 'sound-meter--on' : ''}`}>
+        <span /><span /><span /><span />
+      </span>
+      <span>Sound<span className="sr-only">{on ? ' on' : ' off'}</span></span>
+    </button>
+  )
+}
+
 /** Top bar: identity on the left, section links on the right (a menu sheet on small screens). */
 export function Nav() {
   const section = useApp((s) => s.section)
@@ -49,19 +67,23 @@ export function Nav() {
         {content.name}
       </a>
 
-      <nav aria-label="Sections" className="hidden md:block">
-        <ul className="flex gap-7 font-mono text-[11px] uppercase tracking-[0.2em]">{links()}</ul>
-      </nav>
+      <div className="flex items-center gap-7">
+        <nav aria-label="Sections" className="hidden md:block">
+          <ul className="flex gap-7 font-mono text-[11px] uppercase tracking-[0.2em]">{links()}</ul>
+        </nav>
 
-      <button
-        type="button"
-        className="hud-link font-mono text-[11px] uppercase tracking-[0.2em] md:hidden"
-        aria-expanded={open}
-        aria-controls="mobile-nav"
-        onClick={() => setOpen((o) => !o)}
-      >
-        {open ? 'Close' : 'Menu'}
-      </button>
+        <SoundToggle />
+
+        <button
+          type="button"
+          className="hud-link font-mono text-[11px] uppercase tracking-[0.2em] md:hidden"
+          aria-expanded={open}
+          aria-controls="mobile-nav"
+          onClick={() => setOpen((o) => !o)}
+        >
+          {open ? 'Close' : 'Menu'}
+        </button>
+      </div>
 
       {open && (
         <nav id="mobile-nav" aria-label="Sections" className="fixed inset-0 top-14 bg-bg/95 px-6 pt-8 backdrop-blur md:hidden">

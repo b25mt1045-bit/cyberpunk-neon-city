@@ -2,7 +2,8 @@ import { AdditiveBlending, DoubleSide, ShaderMaterial, Texture, UniformsLib, Uni
 import { glowFogPars, hashGLSL } from './common'
 
 // Hologram panel: canvas texture + scanlines, flicker, occasional horizontal glitch bands,
-// a reveal mask that sweeps upward (used by the skills tower) and a hover boost.
+// a reveal mask that sweeps upward (used by the skills tower), a travelling scan line
+// and a hover boost.
 
 const vertex = /* glsl */ `
 varying vec2 vUv;
@@ -23,6 +24,8 @@ uniform float uOpacity;
 uniform float uHover;
 uniform float uReveal;
 uniform float uSeed;
+uniform float uSweep;
+uniform float uFogScale;
 varying vec2 vUv;
 varying float vFogDepth;
 ${glowFogPars}
@@ -46,13 +49,17 @@ void main() {
   // reveal: everything below uReveal is fully lit; above it is a dim ghost
   float lit = mix(0.12, 1.0, 1.0 - smoothstep(uReveal - 0.015, uReveal + 0.015, vUv.y));
 
-  col *= scan * flicker * lit * uBoost * (1.0 + uHover * 0.6) * uOpacity;
-  col *= glowFog(vFogDepth);
+  // sweep: a bright scan line travelling up the panel (off when uSweep is far outside 0..1)
+  float sw = (vUv.y - uSweep) * 30.0;
+  float sweep = 1.0 + 2.5 * exp(-min(sw * sw, 60.0));
+
+  col *= scan * flicker * lit * sweep * uBoost * (1.0 + uHover * 0.6) * uOpacity;
+  col *= glowFog(vFogDepth * uFogScale);
   gl_FragColor = vec4(min(col, vec3(24.0)), 1.0);
 }
 `
 
-export function createHoloMaterial(map: Texture, opts: { boost?: number; seed?: number } = {}) {
+export function createHoloMaterial(map: Texture, opts: { boost?: number; seed?: number; fogScale?: number } = {}) {
   const material = new ShaderMaterial({
     vertexShader: vertex,
     fragmentShader: fragment,
@@ -70,6 +77,9 @@ export function createHoloMaterial(map: Texture, opts: { boost?: number; seed?: 
         uHover: { value: 0 },
         uReveal: { value: 2 },
         uSeed: { value: opts.seed ?? 0 },
+        uSweep: { value: -10 },
+        // < 1 lets very large holograms punch through the haze
+        uFogScale: { value: opts.fogScale ?? 1 },
       },
     ]),
   })

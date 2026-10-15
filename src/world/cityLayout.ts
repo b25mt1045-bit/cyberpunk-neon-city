@@ -1,5 +1,5 @@
 import { flightPathPoints } from '../camera/flightPath'
-import { LANDMARKS } from './landmarks'
+import { LANDMARKS, MUSE, museToWorld } from './landmarks'
 
 // Deterministic city plan. Every building is a box; hero megatowers are stacks of boxes.
 // All of it renders as ONE InstancedMesh (see City.tsx).
@@ -65,6 +65,16 @@ export function generateCity(density = 1): Building[] {
 
   const reserved = [LANDMARKS.aboutTower, LANDMARKS.skillsTower, LANDMARKS.contactMast]
 
+  // open lot for the street hologram: keep buildings off the line her panels stand on
+  const museA = museToWorld(0, MUSE.groundY)
+  const museB = museToWorld(1000, MUSE.groundY)
+  const nearMuse = (x: number, z: number, half: number) => {
+    const ax = museB.x - museA.x
+    const az = museB.z - museA.z
+    const t = Math.min(1, Math.max(0, ((x - museA.x) * ax + (z - museA.z) * az) / (ax * ax + az * az)))
+    return Math.hypot(museA.x + ax * t - x, museA.z + az * t - z) < half * 1.42 + 18
+  }
+
   // ── generic city on a jittered grid ─────────────────────────
   for (let gx = EXTENT.x0; gx < EXTENT.x1; gx += CELL) {
     for (let gz = EXTENT.z0; gz < EXTENT.z1; gz += CELL) {
@@ -80,6 +90,7 @@ export function generateCity(density = 1): Building[] {
       if (spokeDistance(x, z) < SPOKE_HALF_WIDTH + half) continue
       if (x > AVENUE.x0 && x < AVENUE.x1 && Math.abs(z) < AVENUE.halfWidth + half) continue
       if (reserved.some((l) => Math.hypot(l.x - x, l.z - z) < 60)) continue
+      if (nearMuse(x, z, half)) continue
 
       // Taller toward the core and along the avenue canyon; occasional spikes.
       const core = 70 + 190 * Math.exp(-r / 520)
