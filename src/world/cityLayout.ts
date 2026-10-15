@@ -44,6 +44,15 @@ export function spokeDistance(x: number, z: number) {
   return Math.abs(Math.sin(a - nearest)) * r
 }
 
+const cache = new Map<number, Building[]>()
+
+/** Memoized city plan, shared by every system that decorates the buildings. */
+export function getCity(density = 1): Building[] {
+  let city = cache.get(density)
+  if (!city) cache.set(density, (city = generateCity(density)))
+  return city
+}
+
 export function generateCity(density = 1): Building[] {
   const rand = mulberry32(20261015)
   const path = flightPathPoints(800)

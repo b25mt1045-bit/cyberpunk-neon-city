@@ -12,7 +12,7 @@ import {
 } from 'three'
 import { palette } from '../theme'
 import { buildingFragment, buildingVertex } from '../shaders/buildings'
-import { generateCity } from './cityLayout'
+import { getCity } from './cityLayout'
 
 // Edge-glow colors (HDR: values > 1 feed the bloom).
 const ACCENTS = [palette.cyan, palette.magenta, palette.purple, palette.teal]
@@ -21,7 +21,7 @@ const WINDOWS = ['#ffb468', '#cfe8ff', '#5ff6ff', '#ff7ad9']
 
 export function City({ density = 1 }: { density?: number }) {
   const ref = useRef<InstancedMesh>(null)
-  const buildings = useMemo(() => generateCity(density), [density])
+  const buildings = useMemo(() => getCity(density), [density])
 
   const geometry = useMemo(() => {
     const g = new BoxGeometry(1, 1, 1)

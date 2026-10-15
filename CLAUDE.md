@@ -1,6 +1,6 @@
 # Neon Megacity Portfolio
 
-A 3D portfolio where visitors fly through a rain-soaked neon cyberpunk megacity at night. Scrolling moves the camera along a cinematic flight path; each portfolio section lives at a landmark.
+A 3D portfolio where visitors fly through a hazy neon cyberpunk megacity at night. Scrolling moves the camera along a cinematic flight path; each portfolio section lives at a landmark.
 
 ## Workflow rules
 - Work milestone by milestone (M1–M7 below). After each one: run the dev server, check it in a browser, commit, then **stop and wait for the user's feedback**.
@@ -10,7 +10,8 @@ A 3D portfolio where visitors fly through a rain-soaked neon cyberpunk megacity 
 Inspired by the cyberpunk *genre* only. Never use names, logos, brands, characters, text or assets from Cyberpunk 2077, Edgerunners or any other game or film. All billboards, signs and holograms are original: the user's name and projects, invented brand names, made-up Japanese/English-style signage.
 
 ## Visual style
-Anime-cinematic cyberpunk: high contrast, deep blacks, glowing emissives, heavy bloom, haze, depth fog, light rain, wet reflections.
+Anime-cinematic cyberpunk: high contrast, deep blacks, glowing emissives, heavy bloom, haze, depth fog.
+- **No rain.** The user decided against a rain effect (2026-10-15). Don't add rain particles or a rain toggle.
 - Aerial: dense dark city grid with glowing edges, huge circular holographic plaza at the center, roads radiating like spokes, traffic light trails, red blinking rooftop lights, giant billboards.
 - Street: massive vertical megatowers in purple/blue/pink neon, holographic ads, an original floating hologram creature (a jellyfish).
 
@@ -46,12 +47,12 @@ hero 0–0.10 · dive 0.10–0.20 · about 0.20–0.34 · projects 0.34–0.60 �
 The orbit epilogue (user-approved): rise above the clouds to a planet horizon; no characters.
 
 ## Performance budget
-60fps on a mid-range laptop. Draw calls < 100 (high) / < 50 (low). DPR cap 1.5. Instancing everywhere. Quality tiers via drei PerformanceMonitor: lower DPR, reflections, rain, bloom before removing landmarks. Mobile: ~40% buildings, bloom only. Respect prefers-reduced-motion.
+60fps on a mid-range laptop. Draw calls < 100 (high) / < 50 (low). DPR cap 1.5. Instancing everywhere. Quality tiers via drei PerformanceMonitor: lower DPR, reflections, traffic density, bloom before removing landmarks. Mobile: ~40% buildings, bloom only. Respect prefers-reduced-motion.
 
 ## Milestones
 - [x] M1 setup, empty scene, scroll camera on placeholder path
 - [x] M2 procedural city, shader windows, edge glow, fog, bloom
-- [ ] M3 plaza hologram, traffic trails, rooftop lights, rain, flying vehicles
+- [x] M3 plaza hologram, traffic trails, rooftop lights, flying vehicles (no rain, per user)
 - [ ] M4 full flight path, landmarks, banking/sway/parallax
 - [ ] M5 HUD, loader, nav, content wiring, project panels
 - [ ] M6 jellyfish, glitch transitions, sound, orbit epilogue, polish
@@ -63,5 +64,7 @@ The orbit epilogue (user-approved): rise above the clouds to a planet horizon; n
 - Dev aids: `?nofx` disables post-processing; `window.__gl` exposes the renderer in dev.
 
 ## Known follow-ups
+- Wet-ground reflections were dropped along with rain; revisit in M6 polish only if the ground looks too flat.
+- Plaza sigil: avoid religious or real-world symbols (e.g. no hexagram); keep geometry abstract and tied to the 8 roads.
 - HTML chapter text timing vs camera (text for the next chapter scrolls in early) → fix with the HUD overlay in M5.
 - `THREE.Clock` deprecation warning comes from R3F internals; harmless.
