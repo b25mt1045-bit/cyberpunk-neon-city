@@ -30,6 +30,7 @@ import {
   SKILL_ITEMS,
   skillLevelY,
 } from './landmarks'
+import { sceneClock } from './sceneTime'
 
 const skills = SECTIONS.find((s) => s.id === 'skills')!
 
@@ -38,7 +39,7 @@ function HeroName() {
   const draw = useMemo(() => drawHeroName(content.name, content.title), [])
   // shrink on portrait screens so the name always fits across the view
   const aspect = useThree((s) => s.size.width / s.size.height)
-  const scale = Math.min(1, aspect / 0.85)
+  const scale = Math.min(1, aspect / 0.6)
   return (
     <group scale={[scale, 1, scale]}>
       <HoloPanel
@@ -236,8 +237,8 @@ function ContactBeacon({ index }: { index: number }) {
     [],
   )
   const beamGeo = useMemo(() => new CylinderGeometry(0.9, 0.9, 80, 12, 1, true).translate(0, 40, 0), [])
-  useFrame((s, delta) => {
-    beam.uniforms.uTime.value = s.clock.elapsedTime + index
+  useFrame((_, delta) => {
+    beam.uniforms.uTime.value = sceneClock.time + index
     beam.uniforms.uHover.value = MathUtils.damp(beam.uniforms.uHover.value, hovered ? 1 : 0, 8, delta)
   })
   useEffect(() => () => useApp.getState().setPointerHint(false), [])

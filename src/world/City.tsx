@@ -13,6 +13,7 @@ import {
 import { palette } from '../theme'
 import { buildingFragment, buildingVertex } from '../shaders/buildings'
 import { getCity } from './cityLayout'
+import { sceneClock } from './sceneTime'
 
 // Edge-glow colors (HDR: values > 1 feed the bloom).
 const ACCENTS = [palette.cyan, palette.magenta, palette.purple, palette.teal]
@@ -73,8 +74,8 @@ export function City({ density = 1 }: { density?: number }) {
     mesh.computeBoundingSphere()
   }, [buildings])
 
-  useFrame((state) => {
-    material.uniforms.uTime.value = state.clock.elapsedTime
+  useFrame(() => {
+    material.uniforms.uTime.value = sceneClock.time
   })
 
   return <instancedMesh ref={ref} args={[geometry, material, buildings.length]} frustumCulled={false} />

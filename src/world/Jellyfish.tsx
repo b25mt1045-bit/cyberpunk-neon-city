@@ -15,6 +15,7 @@ import {
   Vector3,
 } from 'three'
 import { useApp } from '../store'
+import { SETTINGS } from '../quality'
 import { palette } from '../theme'
 import { glowFogPars, hashGLSL } from '../shaders/common'
 import { JELLY } from './landmarks'
@@ -316,12 +317,13 @@ function Jelly({ scale, phase, orbit }: JellyProps) {
 }
 
 export function Jellyfish() {
+  const { companions } = SETTINGS[useApp((s) => s.tier)]
   const R = JELLY.radius
   return (
     <>
       <Jelly scale={R} phase={0} />
-      <Jelly scale={R * 0.3} phase={2.1} orbit={{ radius: R * 3.2, speed: 0.11, height: 8, angle: 0 }} />
-      <Jelly scale={R * 0.2} phase={4.2} orbit={{ radius: R * 4.4, speed: -0.08, height: -4, angle: 2.4 }} />
+      {companions >= 1 && <Jelly scale={R * 0.3} phase={2.1} orbit={{ radius: R * 3.2, speed: 0.11, height: 8, angle: 0 }} />}
+      {companions >= 2 && <Jelly scale={R * 0.2} phase={4.2} orbit={{ radius: R * 4.4, speed: -0.08, height: -4, angle: 2.4 }} />}
     </>
   )
 }

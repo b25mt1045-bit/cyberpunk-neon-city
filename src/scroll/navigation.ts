@@ -1,5 +1,5 @@
 import { SECTIONS, type SectionId } from '../sections/chapters'
-import { PROJECT_PANELS } from '../world/landmarks'
+import { content } from '../content'
 
 const range = (id: SectionId) => SECTIONS.find((s) => s.id === id)!
 const at = (id: SectionId, f: number) => {
@@ -10,7 +10,7 @@ const at = (id: SectionId, f: number) => {
 /** Scroll progress where the camera holds in front of project i (matches flightPath's keyframes). */
 export function projectHoldProgress(i: number) {
   const { start, end } = range('projects')
-  const slot = (end - start) / PROJECT_PANELS.length
+  const slot = (end - start) / content.projects.length
   return start + i * slot + slot * 0.7
 }
 

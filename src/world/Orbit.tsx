@@ -4,6 +4,7 @@ import { BackSide, Color, Mesh, ShaderMaterial, Vector2, Vector3 } from 'three'
 import { palette } from '../theme'
 import { hashGLSL } from '../shaders/common'
 import { ORBIT } from './landmarks'
+import { sceneClock } from './sceneTime'
 
 // Orbit epilogue sky. One camera-centered dome whose shader ray-traces a spherical cloud
 // deck (a small stylized planet):
@@ -155,13 +156,13 @@ export function Orbit() {
     })
   }, [])
 
-  useFrame(({ camera, clock }) => {
+  useFrame(({ camera }) => {
     const m = mesh.current!
     // nothing to show until the camera is high enough to look up at the deck
     m.visible = camera.position.y > 150
     m.position.copy(camera.position)
     km(camera.position, material.uniforms.uCam.value)
-    material.uniforms.uTime.value = clock.elapsedTime
+    material.uniforms.uTime.value = sceneClock.time
     material.uniforms.uWhite.value = deckWhiteout(camera.position.y)
   })
 

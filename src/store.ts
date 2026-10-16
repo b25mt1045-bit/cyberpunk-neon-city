@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { SectionId } from './sections/chapters'
+import { initialTier, type Tier } from './quality'
 
 export type BootStep = 'fonts' | 'gl' | 'compile' | 'frames'
 
@@ -18,6 +19,9 @@ interface AppState {
   entered: boolean
   /** The pointer is over something clickable in the 3D scene (drives the custom cursor). */
   pointerHint: boolean
+  /** Current graphics tier (see quality.ts); stepped automatically by the performance monitor. */
+  tier: Tier
+  setTier: (tier: Tier) => void
   /** Generated ambient sound (off by default; the choice is remembered per browser). */
   soundOn: boolean
   setProgress: (progress: number, section: SectionId) => void
@@ -26,6 +30,13 @@ interface AppState {
   enter: () => void
   setPointerHint: (on: boolean) => void
   setSound: (on: boolean) => void
+}
+
+if (typeof window !== 'undefined') {
+  // follow the OS setting live, not just at load
+  window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (e) => {
+    useApp.setState({ reducedMotion: e.matches })
+  })
 }
 
 const SOUND_KEY = 'megacity:sound'
@@ -47,6 +58,8 @@ export const useApp = create<AppState>((set, get) => ({
   boot: { fonts: false, gl: false, compile: false, frames: false },
   entered: false,
   pointerHint: false,
+  tier: typeof window !== 'undefined' ? initialTier() : 'high',
+  setTier: (tier) => set({ tier }),
   soundOn: typeof window !== 'undefined' && readSoundPref(),
   setProgress: (progress, section) => {
     const { activeProject, activeProjectProgress } = get()

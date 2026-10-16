@@ -12,6 +12,7 @@ import {
 import { palette } from '../theme'
 import { glowFogPars } from '../shaders/common'
 import { getCity } from './cityLayout'
+import { sceneClock } from './sceneTime'
 
 // Red aviation beacons on tall rooftops: camera-facing sprites that keep a minimum
 // on-screen size, each blinking on its own period and phase.
@@ -105,7 +106,7 @@ export function RoofLights({ density = 1 }: { density?: number }) {
     [],
   )
 
-  useFrame((s) => (material.uniforms.uTime.value = s.clock.elapsedTime))
+  useFrame(() => (material.uniforms.uTime.value = sceneClock.time))
 
   return <instancedMesh args={[geometry, material, count]} frustumCulled={false} renderOrder={4} />
 }

@@ -4,6 +4,7 @@ import { CanvasTexture, DoubleSide, MathUtils, SRGBColorSpace, type ShaderMateri
 import { useApp } from '../../store'
 import { createHoloMaterial } from '../../shaders/holo'
 import { fontsReady, type Draw } from './panels'
+import { sceneClock } from '../sceneTime'
 
 /** CanvasTexture drawn by `draw`, redrawn once web fonts finish loading. */
 export function useCanvasTexture(width: number, height: number, draw: Draw) {
@@ -60,9 +61,9 @@ export function HoloPanel({ draw, px, size, position, rotation, boost, seed, onF
   const texture = useCanvasTexture(px[0], px[1], draw)
   const material = useMemo(() => createHoloMaterial(texture, { boost, seed }), [texture, boost, seed])
 
-  useFrame((s, delta) => {
+  useFrame((_, delta) => {
     const u = material.uniforms
-    u.uTime.value = s.clock.elapsedTime
+    u.uTime.value = sceneClock.time
     u.uHover.value = MathUtils.damp(u.uHover.value, hovered ? 1 : 0, 8, delta)
     onFrame?.(material)
   })

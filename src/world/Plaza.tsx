@@ -4,6 +4,7 @@ import { AdditiveBlending, Color, ShaderMaterial, UniformsLib, UniformsUtils } f
 import { palette } from '../theme'
 import { glowFogPars } from '../shaders/common'
 import { PLAZA_RADIUS, SPOKE_COUNT } from './cityLayout'
+import { sceneClock } from './sceneTime'
 
 // Animated holographic sigil on the central plaza: counter-rotating rings,
 // an eight-point star, orbiting arcs, tick marks and a pulse wave that travels outward.
@@ -131,7 +132,7 @@ export function Plaza() {
     [],
   )
 
-  useFrame((s) => (material.uniforms.uTime.value = s.clock.elapsedTime))
+  useFrame(() => (material.uniforms.uTime.value = sceneClock.time))
 
   return (
     <mesh rotation-x={-Math.PI / 2} position={[0, 0.4, 0]} material={material} renderOrder={2}>

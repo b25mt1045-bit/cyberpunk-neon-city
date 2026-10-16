@@ -4,6 +4,8 @@ import { Bloom, ChromaticAberration, EffectComposer, Noise, ToneMapping, Vignett
 import { BlendFunction, ToneMappingMode } from 'postprocessing'
 import { Vector2 } from 'three'
 import { useApp } from '../store'
+import { SETTINGS } from '../quality'
+import { sceneClock } from '../world/sceneTime'
 import { GlitchPulseEffect } from './GlitchPulse'
 
 const caOffset = new Vector2(0.0006, 0.0004)
@@ -19,7 +21,7 @@ export function triggerGlitch(strength = 1) {
 // dev aid: fire a burst from the console
 if (import.meta.env.DEV) Object.assign(window, { __glitch: triggerGlitch })
 
-export function Effects() {
+function Full({ msaa }: { msaa: number }) {
   const glitch = useMemo(() => new GlitchPulseEffect(), [])
 
   useEffect(() => {
@@ -34,16 +36,16 @@ export function Effects() {
     }
   }, [glitch])
 
-  useFrame((s) => {
+  useFrame(() => {
     const dt = performance.now() / 1000 - pulse.start
     const k = Math.max(0, 1 - dt / DURATION)
     // stuttered decay so it reads as a signal dropping out, not a fade
     glitch.amount = k > 0 ? pulse.strength * k * k * (Math.sin(dt * 60) > -0.3 ? 1 : 0.25) : 0
-    glitch.time = s.clock.elapsedTime
+    glitch.time = sceneClock.time
   })
 
   return (
-    <EffectComposer multisampling={4}>
+    <EffectComposer multisampling={msaa}>
       <Bloom mipmapBlur intensity={0.95} luminanceThreshold={0.62} luminanceSmoothing={0.25} radius={0.75} />
       <ChromaticAberration offset={caOffset} radialModulation modulationOffset={0.35} />
       <primitive object={glitch} />
@@ -52,4 +54,19 @@ export function Effects() {
       <Noise opacity={0.05} blendFunction={BlendFunction.OVERLAY} />
     </EffectComposer>
   )
+}
+
+/** Low tier (phones, struggling GPUs): bloom and tone mapping only. */
+function Lite({ msaa }: { msaa: number }) {
+  return (
+    <EffectComposer multisampling={msaa}>
+      <Bloom mipmapBlur intensity={0.95} luminanceThreshold={0.62} luminanceSmoothing={0.25} radius={0.75} />
+      <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+    </EffectComposer>
+  )
+}
+
+export function Effects() {
+  const { post, msaa } = SETTINGS[useApp((s) => s.tier)]
+  return post === 'full' ? <Full msaa={msaa} /> : <Lite msaa={msaa} />
 }

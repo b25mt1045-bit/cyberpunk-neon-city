@@ -33,8 +33,9 @@ export function lockScroll(locked: boolean) {
 
 /** Native scroll → Lenis smoothing → single progress value in the store. */
 export function useSmoothScroll() {
+  const reducedMotion = useApp((s) => s.reducedMotion)
   useEffect(() => {
-    const { reducedMotion, setProgress } = useApp.getState()
+    const { setProgress } = useApp.getState()
 
     const update = () => {
       const max = maxScroll()
@@ -61,5 +62,5 @@ export function useSmoothScroll() {
       lenis?.destroy()
       lenis = null
     }
-  }, [])
+  }, [reducedMotion])
 }

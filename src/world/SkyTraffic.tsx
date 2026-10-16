@@ -14,6 +14,7 @@ import {
 import { palette } from '../theme'
 import { glowFogPars } from '../shaders/common'
 import { PLAZA_RADIUS } from './cityLayout'
+import { sceneClock } from './sceneTime'
 
 // Flying vehicles. Straight lanes run above the spoke roads (always clear of buildings)
 // and cross over the plaza; one ring lane circles above the plaza. ~70 vehicles,
@@ -219,7 +220,7 @@ export function SkyTraffic({ density = 1 }: { density?: number }) {
   }
 
   useLayoutEffect(() => place(0))
-  useFrame((s) => place(s.clock.elapsedTime))
+  useFrame(() => place(sceneClock.time))
 
   return (
     <>

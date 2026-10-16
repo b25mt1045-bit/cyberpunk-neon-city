@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { MathUtils, Vector3 } from 'three'
+import { MathUtils, PerspectiveCamera, Vector3 } from 'three'
 import { useApp } from '../store'
 import { projectCameraPose } from '../world/landmarks'
 import { sampleFlight } from './flightPath'
@@ -16,6 +16,10 @@ const zoomLook = new Vector3()
 const worldUp = new Vector3(0, 1, 0)
 
 const ZOOM_DISTANCE = 30
+const BASE_FOV = 55
+const MAX_FOV = 88
+/** half the width of a project billboard plus a margin, for framing it on narrow screens */
+const PANEL_HALF_WIDTH = 17.5
 const easeInOut = (t: number) => t * t * (3 - 2 * t)
 
 /**
@@ -40,6 +44,19 @@ export function CameraRig() {
 
   useFrame((state, rawDelta) => {
     const delta = Math.min(rawDelta, 0.1)
+
+    // portrait screens: widen the vertical FOV so the horizontal view never gets narrower
+    // than it is at 1:1 (billboards and landmarks stay in frame on phones)
+    const aspect = state.size.width / state.size.height
+    const cam = camera as PerspectiveCamera
+    const fov = aspect >= 1 ? BASE_FOV : Math.min(MAX_FOV, MathUtils.radToDeg(2 * Math.atan(Math.tan(MathUtils.degToRad(BASE_FOV / 2)) / aspect)))
+    if (Math.abs(cam.fov - fov) > 0.01) {
+      cam.fov = fov
+      cam.updateProjectionMatrix()
+    }
+    // back off far enough that a whole billboard fits across the narrower view
+    const hHalf = Math.atan(Math.tan(MathUtils.degToRad(fov / 2)) * aspect)
+    const zoomDistance = Math.max(ZOOM_DISTANCE, PANEL_HALF_WIDTH / Math.tan(hHalf))
     const { progress, activeProject, reducedMotion } = useApp.getState()
     const t = state.clock.elapsedTime
 
@@ -47,7 +64,7 @@ export function CameraRig() {
     sampleFlight(smoothed.current, pos, look)
 
     // project zoom: keep the last pose while zooming back out
-    if (activeProject !== null) zoomPose.current = projectCameraPose(activeProject, ZOOM_DISTANCE)
+    if (activeProject !== null) zoomPose.current = projectCameraPose(activeProject, zoomDistance)
     zoom.current = MathUtils.damp(zoom.current, activeProject !== null ? 1 : 0, 3.2, delta)
     const z = easeInOut(zoom.current)
     if (zoomPose.current && z > 0.0005) {
@@ -75,8 +92,12 @@ export function CameraRig() {
       look.addScaledVector(right, state.pointer.x * k).addScaledVector(up, state.pointer.y * k * 0.6)
     }
 
-    telemetry.speed = MathUtils.damp(telemetry.speed, pos.distanceTo(telemetry.position) / Math.max(delta, 1e-3), 4, delta)
-    telemetry.position.copy(pos)
+    const tp = telemetry.position
+    const moved = Math.hypot(pos.x - tp.x, pos.y - tp.y, pos.z - tp.z)
+    telemetry.speed = MathUtils.damp(telemetry.speed, moved / Math.max(delta, 1e-3), 4, delta)
+    tp.x = pos.x
+    tp.y = pos.y
+    tp.z = pos.z
 
     if (!lookCurrent.current) lookCurrent.current = look.clone()
     lookCurrent.current.lerp(look, 1 - Math.exp(-8 * delta))

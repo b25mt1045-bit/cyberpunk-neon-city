@@ -2,8 +2,11 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { AdditiveBlending, Color, FogExp2, MathUtils, Mesh, ShaderMaterial } from 'three'
 import { palette } from '../theme'
+import { useApp } from '../store'
+import { SETTINGS } from '../quality'
 import { aboveClouds } from './landmarks'
 import { deckWhiteout } from './Orbit'
+import { sceneClock } from './sceneTime'
 
 // Exponential fog whose density follows camera altitude (thick haze in the streets,
 // clearer from above), plus a few drifting additive haze layers between the towers.
@@ -77,7 +80,7 @@ function HazeLayer({ y, color, opacity }: (typeof HAZE_LAYERS)[number]) {
   )
   const ref = useRef<Mesh>(null)
   useFrame((s) => {
-    material.uniforms.uTime.value = s.clock.elapsedTime + y
+    material.uniforms.uTime.value = sceneClock.time + y
     // An edge-on plane through the camera can rasterize NaNs, which bloom smears over
     // the whole frame. Hide the layer while the camera is passing through it.
     ref.current!.visible = Math.abs(s.camera.position.y - y) > 4 && !aboveClouds(s.camera.position.y)
@@ -91,6 +94,7 @@ function HazeLayer({ y, color, opacity }: (typeof HAZE_LAYERS)[number]) {
 }
 
 export function Atmosphere() {
+  const { haze } = SETTINGS[useApp((s) => s.tier)]
   const fog = useMemo(() => new FogExp2(new Color(palette.bg).getHex(), 0.0014), [])
   const background = useMemo(() => new Color(palette.bg), [])
 
@@ -109,7 +113,7 @@ export function Atmosphere() {
     <>
       <primitive object={fog} attach="fog" />
       <primitive object={background} attach="background" />
-      {HAZE_LAYERS.map((l) => (
+      {HAZE_LAYERS.slice(0, haze).map((l) => (
         <HazeLayer key={l.y} {...l} />
       ))}
     </>

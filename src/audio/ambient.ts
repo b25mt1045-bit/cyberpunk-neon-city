@@ -1,4 +1,3 @@
-import { MathUtils } from 'three'
 import { telemetry } from '../camera/telemetry'
 import { useApp } from '../store'
 import { SECTIONS } from '../sections/chapters'
@@ -10,6 +9,13 @@ import { SECTIONS } from '../sections/chapters'
 // - a soft pad that swells in the orbit epilogue,
 // - sparse distant chimes while over the city.
 // Plus one-shot UI sounds: hover blips and a whoosh + crackle on chapter changes.
+
+// local helpers: this module loads before the three.js chunk, so it must not import three
+const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v))
+const smoothstep = (x: number, a: number, b: number) => {
+  const t = clamp((x - a) / (b - a), 0, 1)
+  return t * t * (3 - 2 * t)
+}
 
 const orbitStart = SECTIONS.find((s) => s.id === 'orbit')!.start
 const PENTATONIC = [220, 261.63, 293.66, 329.63, 392, 440, 523.25, 587.33]
@@ -169,11 +175,11 @@ class Ambient {
     const alt = telemetry.position.y
     const speed = telemetry.speed
     const { progress } = useApp.getState()
-    const street = 1 - MathUtils.smoothstep(alt, 60, 700)
-    const orbit = MathUtils.smoothstep(progress, orbitStart, orbitStart + 0.07)
-    const moving = MathUtils.clamp(speed / 120, 0, 1)
+    const street = 1 - smoothstep(alt, 60, 700)
+    const orbit = smoothstep(progress, orbitStart, orbitStart + 0.07)
+    const moving = clamp(speed / 120, 0, 1)
 
-    this.droneFilter.frequency.setTargetAtTime(260 + MathUtils.smoothstep(alt, 0, 900) * 700, t, 0.5)
+    this.droneFilter.frequency.setTargetAtTime(260 + smoothstep(alt, 0, 900) * 700, t, 0.5)
     this.hum.gain.setTargetAtTime(0.16 * street * (1 - orbit), t, 0.4)
     this.wind.gain.setTargetAtTime((0.02 + moving * 0.09) * (0.4 + (1 - street) * 0.6) * (1 - orbit * 0.6), t, 0.3)
     this.windFilter.frequency.setTargetAtTime(350 + moving * 900, t, 0.3)

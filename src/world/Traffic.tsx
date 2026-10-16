@@ -12,6 +12,7 @@ import {
 import { palette } from '../theme'
 import { glowFogPars } from '../shaders/common'
 import { AVENUE, PLAZA_RADIUS, SPOKE_COUNT } from './cityLayout'
+import { sceneClock } from './sceneTime'
 
 // Light-trail traffic along the spoke roads and the avenue. Every car is one instanced
 // streak whose position is computed in the vertex shader, so there is no per-frame CPU work.
@@ -140,7 +141,7 @@ export function Traffic({ density = 1 }: { density?: number }) {
     [],
   )
 
-  useFrame((s) => (material.uniforms.uTime.value = s.clock.elapsedTime))
+  useFrame(() => (material.uniforms.uTime.value = sceneClock.time))
 
   return <instancedMesh args={[geometry, material, count]} frustumCulled={false} renderOrder={3} />
 }

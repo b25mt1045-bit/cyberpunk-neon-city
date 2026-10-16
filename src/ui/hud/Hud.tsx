@@ -19,6 +19,11 @@ function Frame() {
   )
 }
 
+function Gfx() {
+  const tier = useApp((s) => s.tier)
+  return <dd className="uppercase">{tier}</dd>
+}
+
 /** Flight data, written straight to the DOM every frame (no React renders). */
 function Readouts() {
   const alt = useRef<HTMLSpanElement>(null)
@@ -47,6 +52,7 @@ function Readouts() {
       <div className={row}><dt className="text-white/35">Pos</dt><dd ref={pos} className="tabular-nums" /></div>
       <div className={row}><dt className="text-white/35">Hdg</dt><dd ref={hdg} className="tabular-nums" /></div>
       <div className={row}><dt className="text-white/35">Spd</dt><dd ref={spd} className="tabular-nums" /></div>
+      <div className={row}><dt className="text-white/35">Gfx</dt><Gfx /></div>
     </dl>
   )
 }

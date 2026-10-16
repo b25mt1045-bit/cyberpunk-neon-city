@@ -1,8 +1,4 @@
-import { Canvas } from '@react-three/fiber'
-import { CameraRig } from './camera/CameraRig'
-import { World } from './world/World'
-import { Preloader } from './world/Preloader'
-import { Effects } from './fx/Effects'
+import { lazy, Suspense } from 'react'
 import { Sections } from './sections/Sections'
 import { Hud } from './ui/hud/Hud'
 import { Loader } from './ui/Loader'
@@ -11,8 +7,9 @@ import { ProjectPanel } from './ui/ProjectPanel'
 import { useSmoothScroll } from './scroll/useSmoothScroll'
 import { useSound } from './audio/useSound'
 
-// dev aid: ?nofx disables post-processing to isolate scene vs effect issues
-const noFx = import.meta.env.DEV && new URLSearchParams(location.search).has('nofx')
+// three.js and the whole scene live in their own chunk: the loader, HUD and the semantic
+// document render first while it downloads.
+const Scene = lazy(() => import('./Scene'))
 
 export default function App() {
   useSmoothScroll()
@@ -21,21 +18,9 @@ export default function App() {
   return (
     <>
       <div className="fixed inset-0 z-0" aria-hidden>
-        <Canvas
-          flat
-          dpr={[1, 1.5]}
-          camera={{ fov: 55, near: 1, far: 6000, position: [0, 620, 45] }}
-          gl={{ antialias: false, powerPreference: 'high-performance' }}
-          onCreated={({ gl }) => {
-            // dev aid: lets tooling read draw calls / triangles
-            if (import.meta.env.DEV) Object.assign(window, { __gl: gl })
-          }}
-        >
-          <World />
-          {!noFx && <Effects />}
-          <CameraRig />
-          <Preloader />
-        </Canvas>
+        <Suspense fallback={null}>
+          <Scene />
+        </Suspense>
       </div>
       <Sections />
       <Hud />
