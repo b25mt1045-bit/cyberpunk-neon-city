@@ -79,28 +79,19 @@ export const CONTACT_BEACONS = content.contact.links.map((link, i, all) => {
   }
 })
 
-// ── STREET HOLOGRAM: a giant projected figure kneeling over the project avenue ──
-// She kneels at the far end of the avenue, in front of the skills tower, facing back down
-// the street, and points across it. She fills the vista as the camera enters the avenue. Figure space is 1000×1000 (see holo/museArt.ts).
-export const MUSE = {
-  /** point on the ground below figure-space x=500 */
-  base: new Vector3(712, 0, 18),
-  rotY: -Math.PI / 2,
-  /** world meters per 1000 figure units */
-  size: 230,
-  /** figure-space y of the ground line */
-  groundY: 930,
-}
-
-/** World position of a figure-space point, pushed `depth` meters toward the viewer. */
-export function museToWorld(fx: number, fy: number, depth = 0, out = new Vector3()) {
-  const k = MUSE.size / 1000
-  const right = new Vector3(Math.cos(MUSE.rotY), 0, -Math.sin(MUSE.rotY))
-  return out
-    .copy(MUSE.base)
-    .addScaledVector(right, (fx - 500) * k)
-    .addScaledVector(normalOf(MUSE.rotY), depth)
-    .setY((MUSE.groundY - fy) * k)
+// ── STREET HOLOGRAM: a giant jellyfish drifting over the project avenue ──
+export const JELLY = {
+  /** it floats this far ahead of the camera along the avenue, clamped to [xMin, xMax] */
+  lead: 170,
+  xMin: 400,
+  xMax: 690,
+  /** height of the bell and its lateral offset from the flight line (y≈40, z≈0) */
+  y: 80,
+  z: -14,
+  /** slow wander around that point, meters */
+  wander: { x: 30, y: 5, z: 8 },
+  /** bell radius in meters */
+  radius: 22,
 }
 
 // ── ORBIT: the cloud deck the camera climbs through, curved over a small stylized planet ──

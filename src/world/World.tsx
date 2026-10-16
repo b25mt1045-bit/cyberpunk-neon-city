@@ -5,7 +5,7 @@ import { Atmosphere } from './Atmosphere'
 import { City } from './City'
 import { Ground } from './Ground'
 import { Landmarks } from './PortfolioLandmarks'
-import { Muse } from './Muse'
+import { Jellyfish } from './Jellyfish'
 import { Orbit } from './Orbit'
 import { Plaza } from './Plaza'
 import { RoofLights } from './RoofLights'
@@ -32,7 +32,7 @@ export function World() {
         <RoofLights />
         <SkyTraffic />
         <Landmarks />
-        <Muse />
+        <Jellyfish />
       </group>
     </>
   )

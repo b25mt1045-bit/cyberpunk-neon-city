@@ -13,7 +13,7 @@ Inspired by the cyberpunk *genre* only. Never use names, logos, brands, characte
 Anime-cinematic cyberpunk: high contrast, deep blacks, glowing emissives, heavy bloom, haze, depth fog.
 - **No rain.** The user decided against a rain effect (2026-10-15). Don't add rain particles or a rain toggle.
 - Aerial: dense dark city grid with glowing edges, huge circular holographic plaza at the center, roads radiating like spokes, traffic light trails, red blinking rooftop lights, giant billboards.
-- Street: massive vertical megatowers in purple/blue/pink neon, holographic ads, and a giant street hologram: an original kneeling woman pointing down into the avenue (replaced the planned jellyfish, user decision 2026-10-15). She must stay original: invented look (asymmetric blade-cut bob, visor light bar instead of drawn eyes, interface port behind the ear), no likeness of any film character or real person.
+- Street: massive vertical megatowers in purple/blue/pink neon, holographic ads, and an original floating hologram creature: a giant jellyfish drifting over the project avenue with two small companions. (A kneeling human figure was tried during M6 and removed at the user's request, 2026-10-16. Do not add human or film-character holograms.)
 
 ## Palette (`src/theme.ts`, mirrored in `src/index.css` @theme)
 | Token | Hex | Use |
@@ -41,7 +41,7 @@ Fonts: Chakra Petch (display), JetBrains Mono (HUD/data).
 - Hologram panels (`src/world/holo/`): canvas-drawn artwork + `createHoloMaterial` (scanlines, flicker, glitch bands, `uReveal`, `uHover`). Use `backing` when something could show through an additive panel.
 - The HTML overlay `<main>` is `pointer-events-none` so clicks reach the 3D scene; text blocks re-enable pointer events.
 - **Two layers of UI (M5):** `src/sections/Sections.tsx` is the real document (semantic, complete, screen-reader-only until keyboard focus enters it, then shown as a card). `src/ui/hud/*` is the visual HUD driven by `store.section`; its chapter card is `aria-hidden` with mouse-only controls. The top nav is the one HUD piece that is fully accessible. Keep any new content in both.
-- Street hologram (`src/world/Muse.tsx`, art in `src/world/holo/museArt.ts`): four parallax canvas panels (aura, body, head, arm) drawn in a shared 1000×1000 figure space; pose in `landmarks.ts` `MUSE` (end of the avenue, facing −X). The city generator keeps her lot clear. She materializes with scroll, fades edge-on, and breaks up into glitch when the camera gets close.
+- Jellyfish (`src/world/Jellyfish.tsx`, constants in `landmarks.ts` `JELLY`): pure shader geometry, no textures. A pulsing bell (fresnel rim, ribs, rising light bands) plus one merged ribbon mesh of 36 tentacles and 4 oral arms animated in the vertex shader; 2 draw calls per creature, 3 creatures. The big one stays ~170 m ahead of the camera along the avenue (so its tentacles never sweep over the lens); every fragment also fades by its own view depth. Reduced motion slows it to near-still.
 - Glitch transitions: `src/fx/GlitchPulse.ts` (custom postprocessing effect), fired by `triggerGlitch()` in `Effects.tsx` on chapter change (lighter on project open). Skipped for reduced motion.
 - Orbit (`src/world/Orbit.tsx`): one camera-centered dome that ray-traces a spherical cloud deck (`ORBIT` in `landmarks.ts`, deck at 760 m on a 12 km planet). Inside the deck, `Atmosphere` pushes fog/background to cloud color (whiteout); above it, the whole city group is hidden (`aboveClouds`).
 - Sound (`src/audio/`): all Web Audio, generated at runtime. Off by default; the toggle in the top nav is remembered in localStorage (`megacity:sound`) and starts on the first gesture.
@@ -67,7 +67,7 @@ The orbit epilogue (user-approved): rise above the clouds to a planet horizon; n
 - [x] M3 plaza hologram, traffic trails, rooftop lights, flying vehicles (no rain, per user)
 - [x] M4 full flight path, landmarks, banking/sway/parallax
 - [x] M5 HUD, loader, nav, content wiring, project panels
-- [x] M6 street hologram figure, glitch transitions, sound, orbit epilogue, polish
+- [x] M6 jellyfish, glitch transitions, sound, orbit epilogue, polish
 - [ ] M7 quality tiers, mobile, reduced motion, SEO/OG, Vercel deploy
 
 ## Shader rules (learned the hard way)
