@@ -53,8 +53,8 @@ export function projectCameraPose(i: number, distance: number) {
   return { pos, look: p.center.clone() }
 }
 
-// ── SKILLS: one lit floor per skill on the skills tower's lower tier (60 m wide, 180 m tall) ──
-export const SKILL_ITEMS = content.skills.flatMap((g) => g.items.map((item) => ({ group: g.label, item })))
+// ── SKILLS: one lit floor per skill group on the skills tower's lower tier (60 m wide, 180 m tall) ──
+export const SKILL_FLOORS = content.skills
 export const SKILLS_TOWER = {
   center: LANDMARKS.skillsTower,
   half: 30,
@@ -62,9 +62,9 @@ export const SKILLS_TOWER = {
   yMax: 172,
 }
 export const skillLevelY = (i: number) =>
-  SKILL_ITEMS.length === 1
+  SKILL_FLOORS.length === 1
     ? (SKILLS_TOWER.yMin + SKILLS_TOWER.yMax) / 2
-    : SKILLS_TOWER.yMin + (i * (SKILLS_TOWER.yMax - SKILLS_TOWER.yMin)) / (SKILL_ITEMS.length - 1)
+    : SKILLS_TOWER.yMin + (i * (SKILLS_TOWER.yMax - SKILLS_TOWER.yMin)) / (SKILL_FLOORS.length - 1)
 
 // ── CONTACT: beacons on the contact tower's second-tier roof (40 m wide, top at y=240) ──
 export const CONTACT_ROOF = { center: new Vector3(LANDMARKS.contactMast.x, 240, LANDMARKS.contactMast.z), half: 20 }

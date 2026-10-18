@@ -1,5 +1,5 @@
 import { palette } from '../../theme'
-import type { ContactLink, Project } from '../../content'
+import type { ContactLink, Project, SkillGroup } from '../../content'
 
 // Canvas artwork for every hologram panel. Everything is drawn at runtime from content.ts,
 // so there are no image assets to license or load.
@@ -83,13 +83,19 @@ export const drawHeroName =
     ctx.font = display(size)
     while (ctx.measureText(name).width > w * 0.92 && size > 20) ctx.font = display((size -= 4))
     splitText(ctx, name, w / 2, h * 0.42, palette.cyan)
-    ctx.font = mono(h * 0.09, 600)
+    const spaced = title.toUpperCase().split('').join(' ')
+    size = h * 0.09
+    ctx.font = mono(size, 600)
+    while (ctx.measureText(spaced).width > w * 0.9 && size > 12) ctx.font = mono((size -= 2), 600)
     ctx.fillStyle = palette.teal
-    ctx.fillText(title.toUpperCase().split('').join(' '), w / 2, h * 0.82)
-    // rule lines either side of the title
-    ctx.fillStyle = palette.cyan
-    ctx.fillRect(w * 0.05, h * 0.82, w * 0.18, 3)
-    ctx.fillRect(w * 0.77, h * 0.82, w * 0.18, 3)
+    ctx.fillText(spaced, w / 2, h * 0.82)
+    // rule lines either side of the title, when there is room for them
+    const tw = ctx.measureText(spaced).width
+    if (tw < w * 0.5) {
+      ctx.fillStyle = palette.cyan
+      ctx.fillRect(w * 0.05, h * 0.82, w * 0.18, 3)
+      ctx.fillRect(w * 0.77, h * 0.82, w * 0.18, 3)
+    }
   }
 
 export const drawAbout =
@@ -104,15 +110,26 @@ export const drawAbout =
     ctx.fillText('// 01  ABOUT', pad, pad)
     ctx.font = display(w * 0.085)
     splitText(ctx, name, pad, pad + w * 0.06, '#ffffff')
-    let y = pad + w * 0.2
-    ctx.font = display(w * 0.042, 400)
+    // shrink the body text until the bio fits above the location line
+    const top = pad + w * 0.2
+    const bottom = h - pad - w * 0.08
+    let s = 1
+    let paras: string[][]
+    for (;;) {
+      ctx.font = display(w * 0.042 * s, 400)
+      paras = bio.map((para) => wrap(ctx, para, w - pad * 2))
+      const lines = paras.reduce((n, l) => n + l.length, 0)
+      if (top + w * s * (lines * 0.058 + paras.length * 0.03) <= bottom || s < 0.5) break
+      s -= 0.05
+    }
+    let y = top
     ctx.fillStyle = '#e8f6ff'
-    for (const para of bio) {
-      for (const line of wrap(ctx, para, w - pad * 2)) {
+    for (const para of paras) {
+      for (const line of para) {
         ctx.fillText(line, pad, y)
-        y += w * 0.058
+        y += w * 0.058 * s
       }
-      y += w * 0.03
+      y += w * 0.03 * s
     }
     ctx.font = mono(w * 0.03)
     ctx.fillStyle = palette.cyan
@@ -140,7 +157,9 @@ export const drawProject =
     ctx.font = display(w * 0.034, 400)
     ctx.fillStyle = '#d8ecff'
     let y = pad + h * 0.38
-    for (const line of wrap(ctx, p.description, w - pad * 2).slice(0, 3)) {
+    const lines = wrap(ctx, p.description, w - pad * 2)
+    if (lines.length > 3) lines[2] = lines[2].replace(/[\s,.;:]*\S*$/, '…') // full text is in the HTML panel
+    for (const line of lines.slice(0, 3)) {
       ctx.fillText(line, pad, y)
       y += w * 0.046
     }
@@ -151,6 +170,7 @@ export const drawProject =
     const chipY = h - pad - w * 0.05
     for (const t of p.tech) {
       const tw = ctx.measureText(t).width + w * 0.03
+      if (x + tw > w - pad) break // the HTML panel lists the full stack
       ctx.strokeStyle = palette.teal
       ctx.lineWidth = 2
       ctx.strokeRect(x, chipY, tw, w * 0.045)
@@ -160,20 +180,22 @@ export const drawProject =
     }
   }
 
-/** One tall strip covering the tower face; label i sits at fraction `levelFrac(i)` from the bottom. */
+/** One tall strip covering the tower face; group i hangs just below floor line `levelFrac(i)` (from the bottom). */
 export const drawSkillsStrip =
-  (items: { group: string; item: string }[], levelFrac: (i: number) => number): Draw =>
+  (groups: SkillGroup[], levelFrac: (i: number) => number): Draw =>
   (ctx, w, h) => {
-    ctx.textBaseline = 'middle'
-    items.forEach(({ group, item }, i) => {
+    ctx.textBaseline = 'top'
+    groups.forEach(({ label, items }, i) => {
       const y = h * (1 - levelFrac(i))
-      ctx.font = mono(w * 0.04, 600)
-      ctx.fillStyle = palette.teal
-      ctx.fillText(group.toUpperCase(), w * 0.04, y - w * 0.055)
-      ctx.font = display(w * 0.085)
-      splitText(ctx, item.toUpperCase(), w * 0.04, y + w * 0.01, '#ffffff')
       ctx.fillStyle = palette.cyan
-      ctx.fillRect(w * 0.04, y + w * 0.065, w * 0.92, 3)
+      ctx.fillRect(w * 0.04, y, w * 0.92, 3)
+      ctx.font = display(w * 0.075)
+      splitText(ctx, label.toUpperCase(), w * 0.04, y + w * 0.03, '#ffffff')
+      ctx.font = mono(w * 0.036, 600)
+      ctx.fillStyle = palette.teal
+      wrap(ctx, items.join('  ·  '), w * 0.92).forEach((line, k) => {
+        ctx.fillText(line, w * 0.04, y + w * (0.13 + k * 0.05))
+      })
     })
   }
 

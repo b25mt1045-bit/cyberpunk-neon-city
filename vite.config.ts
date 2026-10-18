@@ -10,6 +10,13 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
  * (title, description, Open Graph / Twitter tags, JSON-LD, a <noscript> copy of the content)
  * and emits robots.txt and sitemap.xml at build time.
  */
+/** VITE_SITE_URL if set, else the project's default Vercel domain (set by Vercel at build time). */
+function siteUrl(explicit?: string) {
+  if (explicit) return explicit
+  const vercel = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  return vercel ? `https://${vercel}` : 'https://example.com'
+}
+
 function seo(siteUrl: string): Plugin {
   const url = siteUrl.replace(/\/$/, '')
   const title = `${content.name} — ${content.title}`
@@ -72,7 +79,7 @@ function seo(siteUrl: string): Plugin {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', 'VITE_')
   return {
-    plugins: [react(), tailwindcss(), seo(env.VITE_SITE_URL || 'https://example.com')],
+    plugins: [react(), tailwindcss(), seo(siteUrl(env.VITE_SITE_URL))],
     build: {
       // the three.js chunk is large by nature; it is loaded after the boot loader paints
       chunkSizeWarningLimit: 1200,

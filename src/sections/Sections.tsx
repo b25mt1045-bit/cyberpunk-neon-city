@@ -57,15 +57,17 @@ export function Sections() {
               <h3>{p.title}</h3>
               <p>{p.description}</p>
               <p>Tech: {p.tech.join(', ')}</p>
-              <ul>
-                {p.links.map((l) => (
-                  <li key={l.href}>
-                    <a href={l.href} target="_blank" rel="noreferrer">
-                      {l.label}: {p.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              {p.links.length > 0 && (
+                <ul>
+                  {p.links.map((l) => (
+                    <li key={l.href}>
+                      <a href={l.href} target="_blank" rel="noreferrer">
+                        {l.label}: {p.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
               <button type="button" onClick={() => openProject(i)}>
                 Fly to {p.title}
               </button>

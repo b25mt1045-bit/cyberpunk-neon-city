@@ -27,7 +27,7 @@ import {
   HERO_NAME,
   PROJECT_PANELS,
   SKILLS_TOWER,
-  SKILL_ITEMS,
+  SKILL_FLOORS,
   skillLevelY,
 } from './landmarks'
 import { sceneClock } from './sceneTime'
@@ -130,13 +130,13 @@ function skillsReveal() {
 
 function SkillsTower() {
   const { center, half, yMin, yMax } = SKILLS_TOWER
-  const n = SKILL_ITEMS.length
-  // the label strip spans the floors plus a margin
-  const stripBottom = yMin - 6
+  const n = SKILL_FLOORS.length
+  // the label strip spans the floors plus room for the lowest group's text below its floor
+  const stripBottom = yMin - 20
   const stripTop = yMax + 10
   const stripH = stripTop - stripBottom
   const levelFrac = (i: number) => (skillLevelY(i) - stripBottom) / stripH
-  const draw = useMemo(() => drawSkillsStrip(SKILL_ITEMS, levelFrac), [])
+  const draw = useMemo(() => drawSkillsStrip(SKILL_FLOORS, levelFrac), [])
   const stripW = half * 2 - 6
 
   // glowing floor plates, one per skill, slightly wider than the tower
@@ -145,7 +145,7 @@ function SkillsTower() {
     const g = new BoxGeometry(1, 1, 1)
     g.setAttribute(
       'aLevel',
-      new InstancedBufferAttribute(Float32Array.from(SKILL_ITEMS, (_, i) => (n === 1 ? 0 : i / (n - 1))), 1),
+      new InstancedBufferAttribute(Float32Array.from(SKILL_FLOORS, (_, i) => (n === 1 ? 0 : i / (n - 1))), 1),
     )
     const m = new ShaderMaterial({
       vertexShader: plateVertex,
@@ -161,7 +161,7 @@ function SkillsTower() {
 
   useLayoutEffect(() => {
     const o = new Object3D()
-    SKILL_ITEMS.forEach((_, i) => {
+    SKILL_FLOORS.forEach((_, i) => {
       o.position.set(center.x, skillLevelY(i) - 2.5, center.z)
       o.scale.set(half * 2 + 1.6, 0.5, half * 2 + 1.6)
       o.updateMatrix()

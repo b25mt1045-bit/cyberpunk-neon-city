@@ -7,3 +7,4 @@ dist
 .claude/skills/*/demo/
 .claude/settings.local.json
 .claude/launch.json
+*.tsbuildinfo
